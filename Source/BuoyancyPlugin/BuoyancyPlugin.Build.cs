@@ -38,6 +38,12 @@ public class BuoyancyPlugin : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+				"PhysX",
+				"APEX",
+				"ApexDestruction",
+				"RHI",
+				"RenderCore",
+				"OceanShaderPlugin",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
