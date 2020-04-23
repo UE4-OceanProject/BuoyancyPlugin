@@ -24,6 +24,10 @@
     {
       "Name": "OceanShaderPlugin",
       "Enabled": true
+    },
+	    {
+      "Name": "ApexDestruction",
+      "Enabled": true
     }
   ]
 }
