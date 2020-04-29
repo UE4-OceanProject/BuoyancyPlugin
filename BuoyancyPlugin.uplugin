@@ -4,7 +4,7 @@
 	"VersionName": "1.0",
 	"FriendlyName": "BuoyancyPlugin",
 	"Description": "",
-	"Category": "Other",
+	"Category": "Buoyancy",
 	"CreatedBy": "",
 	"CreatedByURL": "",
 	"DocsURL": "",
@@ -22,7 +22,7 @@
   ],
   "Plugins": [
     {
-      "Name": "OceanShaderPlugin",
+      "Name": "OceanPlugin",
       "Enabled": true
     },
 	    {

@@ -19,7 +19,7 @@
 * =================================================*/
 
 #include "BuoyantMesh/WaterHeightmapComponent.h"
-#include "OceanShaderPlugin/Private/OceanShaderManager.h"
+#include "OceanPlugin/Private/OceanManager.h"
 #include "DrawDebugHelpers.h"
 #include "EngineUtils.h"
 
@@ -127,7 +127,7 @@ void UWaterHeightmapComponent::DrawHeightmap()
 
 void UWaterHeightmapComponent::Initialize()
 {
-	for (auto Actor : TActorRange<AOceanShaderManager>(GetWorld()))
+	for (auto Actor : TActorRange<AOceanManager>(GetWorld()))
 	{
 		if (IsValid(Actor))
 		{

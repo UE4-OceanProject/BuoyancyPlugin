@@ -27,7 +27,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "OceanShaderPlugin/Private/OceanShaderManager.h"
+#include "OceanPlugin/Private/OceanManager.h"
 #include "AdvancedBuoyancyComponent.generated.h"
 
 USTRUCT(BlueprintType)
@@ -128,7 +128,7 @@ public:
 
 	// World information
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "World Data")
-		AOceanShaderManager* TheOcean = nullptr;
+		AOceanManager* TheOcean = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "World Data")
 		float WaterDensity = 1025.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "World Data")

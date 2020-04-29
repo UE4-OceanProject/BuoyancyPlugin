@@ -55,9 +55,9 @@ void UBuoyancyComponent::InitializeComponent()
 	// If no OceanManager is defined, auto-detect
 	if (!OceanManager)
 	{
-		for (TActorIterator<AOceanShaderManager> ActorItr(World); ActorItr; ++ActorItr)
+		for (TActorIterator<AOceanManager> ActorItr(World); ActorItr; ++ActorItr)
 		{
-			OceanManager = Cast<AOceanShaderManager>(*ActorItr);
+			OceanManager = Cast<AOceanManager>(*ActorItr);
 			break;
 		}
 	}

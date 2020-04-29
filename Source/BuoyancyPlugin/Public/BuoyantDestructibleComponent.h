@@ -21,7 +21,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "OceanShaderPlugin/Private/OceanShaderManager.h"
+#include "OceanPlugin/Private/OceanManager.h"
 #include "DestructibleComponent.h"
 #include "BuoyantDestructibleComponent.generated.h"
 
@@ -42,7 +42,7 @@ private:
  
 public:
 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category = "Buoyancy Settings")
-	AOceanShaderManager* OceanManager;
+	AOceanManager* OceanManager;
 
 	/* Density of each chunk */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buoyancy Settings")

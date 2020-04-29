@@ -299,7 +299,7 @@ void UAdvancedBuoyancyComponent::PopulateTrianglesFromStaticMesh()
 
 void UAdvancedBuoyancyComponent::GetOcean()
 {
-	for (auto Actor : TActorRange<AOceanShaderManager>(GetWorld()))
+	for (auto Actor : TActorRange<AOceanManager>(GetWorld()))
 	{
 		TheOcean =  Actor;
 	}

@@ -21,7 +21,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "OceanShaderPlugin/Private/OceanShaderManager.h"
+#include "OceanPlugin/Private/OceanManager.h"
 #include <Components/SceneComponent.h>
 #include "BuoyancyForceComponent.generated.h"
 
@@ -60,7 +60,7 @@ class UBuoyancyForceComponent : public USceneComponent
 
 	/* OceanManager used by the component, if unassigned component will auto-detect */
 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category = "Buoyancy Settings")
-	AOceanShaderManager* OceanManager;
+	AOceanManager* OceanManager;
 	
 	/* Density of mesh. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buoyancy Settings")

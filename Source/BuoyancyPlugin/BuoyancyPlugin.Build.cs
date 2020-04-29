@@ -43,7 +43,7 @@ public class BuoyancyPlugin : ModuleRules
 				"ApexDestruction",
 				"RHI",
 				"RenderCore",
-				"OceanShaderPlugin",
+				"OceanPlugin",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

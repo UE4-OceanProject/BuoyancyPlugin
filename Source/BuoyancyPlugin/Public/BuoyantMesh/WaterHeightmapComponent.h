@@ -25,7 +25,7 @@
 #include "WaterHeightmapComponent.generated.h"
 
 
-class AOceanShaderManager;
+class AOceanManager;
 // Water heightmap centered on the owning actor.
 // Only the heightmap vertices that are actually used trigger an ocean height calculation. Queries between vertices are
 // interpolated. Vertex heights are cached within a tick.
@@ -132,5 +132,5 @@ class BUOYANCYPLUGIN_API UWaterHeightmapComponent : public UActorComponent
 	void DrawHeightmap();
 
 	UPROPERTY()
-	AOceanShaderManager* OceanManager = nullptr;
+	AOceanManager* OceanManager = nullptr;
 };
