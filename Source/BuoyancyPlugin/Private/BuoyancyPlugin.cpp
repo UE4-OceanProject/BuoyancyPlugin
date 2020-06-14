@@ -1,4 +1,5 @@
-// Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
+// For copyright see LICENSE in EnvironmentProject root dir, or:
+//https://github.com/UE4-OceanProject/OceanProject/blob/Master-Environment-Project/LICENSE
 
 #include "BuoyancyPlugin.h"
 

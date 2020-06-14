@@ -1,4 +1,5 @@
-// Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
+// For copyright see LICENSE in EnvironmentProject root dir, or:
+//https://github.com/UE4-OceanProject/OceanProject/blob/Master-Environment-Project/LICENSE
 
 using UnrealBuildTool;
 
@@ -6,8 +7,8 @@ public class BuoyancyPlugin : ModuleRules
 {
 	public BuoyancyPlugin(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-		
+		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+
 		PublicIncludePaths.AddRange(
 			new string[] {
 				// ... add public include paths required here ...
@@ -36,8 +37,6 @@ public class BuoyancyPlugin : ModuleRules
 			{
 				"CoreUObject",
 				"Engine",
-				"Slate",
-				"SlateCore",
 				"PhysX",
 				"APEX",
 				"ApexDestruction",
@@ -55,5 +54,8 @@ public class BuoyancyPlugin : ModuleRules
 				// ... add any modules that your module loads dynamically here ...
 			}
 			);
+
+		// Make sure UBT reminds us of how to keep the project IWYU compliant
+		bEnforceIWYU = true;
 	}
 }

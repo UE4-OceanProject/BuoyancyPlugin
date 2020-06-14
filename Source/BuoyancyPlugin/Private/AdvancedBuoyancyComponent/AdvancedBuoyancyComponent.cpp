@@ -1,34 +1,11 @@
-/*=================================================
-* FileName: AdvancedBuoyancyComponent.cpp
-*
-* Created by: Burnrate (Justin Beales)
-* Project name: OceanProject
-* Unreal Engine version: 4.19
-* Created on: 2017/01/01
-*
-* Last Edited on: 2018/03/15
-* Last Edited by: Reapazor (Matthew Davey)
-*
-* -------------------------------------------------
-* Created with Misc. Games and Intelligent Procedure for:
-* Fishing: Barents Sea
-* http://miscgames.no/
-* http://www.IntelligentProcedure.com 
-* -------------------------------------------------
-* For parts referencing UE4 code, the following copyright applies:
-* Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
-*
-* Feel free to use this software in any commercial/free game.
-* Selling this as a plugin/item, in whole or part, is not allowed.
-* See "OceanProject\License.md" for full licensing details.
-* =================================================*/
+// For copyright see LICENSE in EnvironmentProject root dir, or:
+//https://github.com/UE4-OceanProject/OceanProject/blob/Master-Environment-Project/LICENSE
 
 #include "AdvancedBuoyancyComponent/AdvancedBuoyancyComponent.h"
 #include "Engine/StaticMesh.h"
 #include "StaticMeshResources.h"
 #include "DrawDebugHelpers.h"
 #include "EngineUtils.h"
-#include "Engine/Engine.h"	// According to UE4's IWYU Reference Guide, this is the correct Engine.h to include
 
 
 // Constructor
