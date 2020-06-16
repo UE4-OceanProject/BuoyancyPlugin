@@ -84,17 +84,13 @@ class BUOYANCYPLUGIN_API UAdvancedBuoyancyComponent : public USceneComponent
 {
 	GENERATED_BODY()
 
+public:
 	// Constructor
 	UAdvancedBuoyancyComponent();
 
-	// Initialize component
 	virtual void InitializeComponent() override;
-
-	// virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-	// Called every frame
 	virtual void TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) override;
-public:
+
 	
 	// use drag when using advanced buoyancy (most likely will always be yes)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Options")

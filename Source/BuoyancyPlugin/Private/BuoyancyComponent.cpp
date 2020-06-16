@@ -12,28 +12,14 @@
 UBuoyancyComponent::UBuoyancyComponent(const class FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	//Defaults
-	MeshDensity = 600.0f;
-	FluidDensity = 1025.0f;
-	TestPointRadius = 10.0f;
-	FluidLinearDamping = 1.0f;
-	FluidAngularDamping = 1.0f;
-
-	VelocityDamper = FVector(0.1, 0.1, 0.1);
-	MaxUnderwaterVelocity = 1000.f;
-
-	StayUprightStiffness = 50.0f;
-	StayUprightDamping = 5.0f;
-
-	WaveForceMultiplier = 2.0f;
 }
 
 void UBuoyancyComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 
-	//Store the world ref.
-	World = GetWorld();
+	// Store the world ref.
+	UWorld* World = GetWorld();
 
 	// If no OceanManager is defined, auto-detect
 	if (!OceanManager)
@@ -49,111 +35,113 @@ void UBuoyancyComponent::InitializeComponent()
 
 	TestPointRadius = FMath::Abs(TestPointRadius);
 
-	//Signed based on gravity, just in case we need an upside down world
-	_SignedRadius = FMath::Sign(GetGravityZ()) * TestPointRadius;
+	// Signed based on gravity, just in case we need an upside down world
+	SignedRadius = FMath::Sign(GetGravityZ()) * TestPointRadius;
 
-	if (UpdatedPrimitive->IsValidLowLevel())
+	if (IsValid(UpdatedPrimitive))
 	{
-		//Store the initial damping values.
-		_baseLinearDamping = UpdatedPrimitive->GetLinearDamping();
-		_baseAngularDamping = UpdatedPrimitive->GetAngularDamping();
+		// Store the initial damping values.
+		BaseLinearDamping = UpdatedPrimitive->GetLinearDamping();
+		BaseAngularDamping = UpdatedPrimitive->GetAngularDamping();
 	}
 }
 
-void UBuoyancyComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
+void UBuoyancyComponent::BeginPlay()
 {
+	Super::BeginPlay();
+
+	ApplyUprightConstraint();
+}
+
+void UBuoyancyComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	// Make sure everything is valid
 	if (!OceanManager || !UpdatedComponent || !UpdatedPrimitive) return;
 
+	// No physics
 	if (!UpdatedComponent->IsSimulatingPhysics())
 	{
-		FVector waveHeight = OceanManager->GetWaveHeightValue(UpdatedComponent->GetComponentLocation());
-		UpdatedPrimitive->SetWorldLocation(FVector(UpdatedComponent->GetComponentLocation().X, UpdatedComponent->GetComponentLocation().Y, waveHeight.Z), true);
+		const FVector WaveHeight = OceanManager->GetWaveHeightValue(UpdatedComponent->GetComponentLocation());
+		UpdatedPrimitive->SetWorldLocation(FVector(UpdatedComponent->GetComponentLocation().X, UpdatedComponent->GetComponentLocation().Y, WaveHeight.Z), true);
 		return;
 	}
 
-	//ApplyUprightConstraint is apparently needed again at first tick for BP-updated components. 
-	//TODO: there has to be a better way than this(?), PostInitialize(?)
-	if (!_hasTicked)
-	{
-		_hasTicked = true;
-		ApplyUprightConstraint();
-	}
-
-	float TotalPoints = TestPoints.Num();
+	// Buoyancy
+	const float TotalPoints = TestPoints.Num();
 	if (TotalPoints < 1) return;
 
 	int PointsUnderWater = 0;
-	for (int pointIndex = 0; pointIndex < TotalPoints; pointIndex++)
+	for (int PointIndex = 0; PointIndex < TotalPoints; PointIndex++)
 	{
-		if (!TestPoints.IsValidIndex(pointIndex)) return; //Array size changed during runtime
+		if (!TestPoints.IsValidIndex(PointIndex)) return; // Array size changed during runtime
 
-		bool isUnderwater = false;
-		FVector testPoint = TestPoints[pointIndex];
-		FVector worldTestPoint = UpdatedComponent->GetComponentTransform().TransformPosition(testPoint);
-		float waveHeight = OceanManager->GetWaveHeightValue(worldTestPoint).Z;
+		bool bIsUnderwater = false;
+		FVector TestPoint = TestPoints[PointIndex];
+		FVector WorldTestPoint = UpdatedComponent->GetComponentTransform().TransformPosition(TestPoint);
+		const float WaveHeight = OceanManager->GetWaveHeightValue(WorldTestPoint).Z;
 
-		//If test point radius is touching water add buoyancy force
-		if (waveHeight > (worldTestPoint.Z + _SignedRadius))
+		// If test point radius is touching water add buoyancy force
+		if (WaveHeight > (WorldTestPoint.Z + SignedRadius))
 		{
 			PointsUnderWater++;
-			isUnderwater = true;
+			bIsUnderwater = true;
 
-			float DepthMultiplier = (waveHeight - (worldTestPoint.Z + _SignedRadius)) / (TestPointRadius * 2);
+			float DepthMultiplier = (WaveHeight - (WorldTestPoint.Z + SignedRadius)) / (TestPointRadius * 2);
 			DepthMultiplier = FMath::Clamp(DepthMultiplier, 0.f, 1.f);
 
-			//If we have a point density override, use the overridden value instead of MeshDensity
-			float PointDensity = PointDensityOverride.IsValidIndex(pointIndex) ? PointDensityOverride[pointIndex] : MeshDensity;
+			// If we have a point density override, use the overridden value instead of MeshDensity
+			const float PointDensity = PointDensityOverride.IsValidIndex(PointIndex) ? PointDensityOverride[PointIndex] : MeshDensity;
 
 			/**
 			* --------
 			* Buoyancy force formula: (Volume(Mass / Density) * Fluid Density * -Gravity) / Total Points * Depth Multiplier
 			* --------
 			*/
-			float BuoyancyForceZ = UpdatedPrimitive->GetMass() / PointDensity * FluidDensity * -GetGravityZ() / TotalPoints * DepthMultiplier;
+			const float BuoyancyForceZ = UpdatedPrimitive->GetMass() / PointDensity * FluidDensity * -GetGravityZ() / TotalPoints * DepthMultiplier;
 
-			//Experimental velocity damping using GetUnrealWorldVelocityAtPoint!
-			FVector DampingForce = -GetVelocityAtPoint(UpdatedPrimitive, worldTestPoint) * VelocityDamper * UpdatedPrimitive->GetMass() * DepthMultiplier;
+			// Experimental velocity damping using GetUnrealWorldVelocityAtPoint!
+			FVector DampingForce = -GetVelocityAtPoint(UpdatedPrimitive, WorldTestPoint) * VelocityDamper * UpdatedPrimitive->GetMass() * DepthMultiplier;
 
-			//Wave push force
+			// Wave push force
 			if (EnableWaveForces)
 			{
-				float waveVelocity = FMath::Clamp(GetVelocityAtPoint(UpdatedPrimitive, worldTestPoint).Z, -20.f, 150.f) * (1 - DepthMultiplier);
-				DampingForce += FVector(OceanManager->GlobalWaveDirection.X, OceanManager->GlobalWaveDirection.Y, 0) * UpdatedPrimitive->GetMass() * waveVelocity * WaveForceMultiplier / TotalPoints;
+				const float WaveVelocity = FMath::Clamp(GetVelocityAtPoint(UpdatedPrimitive, WorldTestPoint).Z, -20.f, 150.f) * (1 - DepthMultiplier);
+				DampingForce += FVector(OceanManager->GlobalWaveDirection.X, OceanManager->GlobalWaveDirection.Y, 0) * UpdatedPrimitive->GetMass() * WaveVelocity * WaveForceMultiplier / TotalPoints;
 			}
 
-			//Add force for this test point
-			UpdatedPrimitive->AddForceAtLocation(FVector(DampingForce.X, DampingForce.Y, DampingForce.Z + BuoyancyForceZ), worldTestPoint);
+			// Add force for this test point
+			UpdatedPrimitive->AddForceAtLocation(FVector(DampingForce.X, DampingForce.Y, DampingForce.Z + BuoyancyForceZ), WorldTestPoint);
 		}
 
 		if (DrawDebugPoints)
 		{
 			FColor DebugColor = FLinearColor(0.8, 0.7, 0.2, 0.8).ToRGBE();
-			if (isUnderwater) { DebugColor = FLinearColor(0, 0.2, 0.7, 0.8).ToRGBE(); } //Blue color underwater, yellow out of watter
-			DrawDebugSphere(World, worldTestPoint, TestPointRadius, 8, DebugColor);
+			if (bIsUnderwater) { DebugColor = FLinearColor(0, 0.2, 0.7, 0.8).ToRGBE(); } //Blue color underwater, yellow out of watter
+			DrawDebugSphere(GetWorld(), WorldTestPoint, TestPointRadius, 8, DebugColor);
 		}
 	}
 
-	//Clamp the velocity to MaxUnderwaterVelocity if there is any point underwater
+	// Clamp the velocity to MaxUnderwaterVelocity if there is any point underwater
 	if (ClampMaxVelocity && PointsUnderWater > 0
 		&& UpdatedPrimitive->GetPhysicsLinearVelocity().Size() > MaxUnderwaterVelocity)
 	{
-		FVector	vVelocity = UpdatedPrimitive->GetPhysicsLinearVelocity().GetSafeNormal() * MaxUnderwaterVelocity;
-		UpdatedPrimitive->SetPhysicsLinearVelocity(vVelocity);
+		const FVector LastVelocity = UpdatedPrimitive->GetPhysicsLinearVelocity().GetSafeNormal() * MaxUnderwaterVelocity;
+		UpdatedPrimitive->SetPhysicsLinearVelocity(LastVelocity);
 	}
 
-	//Update damping based on number of underwater test points
-	UpdatedPrimitive->SetLinearDamping(_baseLinearDamping + FluidLinearDamping / TotalPoints * PointsUnderWater);
-	UpdatedPrimitive->SetAngularDamping(_baseAngularDamping + FluidAngularDamping / TotalPoints * PointsUnderWater);
+	// Update damping based on number of underwater test points
+	UpdatedPrimitive->SetLinearDamping(BaseLinearDamping + FluidLinearDamping / TotalPoints * PointsUnderWater);
+	UpdatedPrimitive->SetAngularDamping(BaseAngularDamping + FluidAngularDamping / TotalPoints * PointsUnderWater);
 }
 
 FVector UBuoyancyComponent::GetVelocityAtPoint(UPrimitiveComponent* Target, FVector Point, FName BoneName)
 {
 	if (!Target) return FVector::ZeroVector;
 
-	FBodyInstance* BI = Target->GetBodyInstance(BoneName);
-	if (BI->IsValidBodyInstance())
+	FBodyInstance* Bi = Target->GetBodyInstance(BoneName);
+	if (Bi->IsValidBodyInstance())
 	{
-		return BI->GetUnrealWorldVelocityAtPoint(Point);
+		return Bi->GetUnrealWorldVelocityAtPoint(Point);
 	}
 
 	return FVector::ZeroVector;
@@ -161,27 +149,27 @@ FVector UBuoyancyComponent::GetVelocityAtPoint(UPrimitiveComponent* Target, FVec
 
 void UBuoyancyComponent::ApplyUprightConstraint()
 {
-	//Stay upright physics constraint (inspired by UDK's StayUprightSpring)
+	// Stay upright physics constraint (inspired by UDK's StayUprightSpring)
 	if (EnableStayUprightConstraint)
 	{
 		if (!ConstraintComp) ConstraintComp = NewObject<UPhysicsConstraintComponent>(UpdatedPrimitive);
 
-		//Settings
+		// Settings
 		FConstraintInstance ConstraintInstance;
 
 		ConstraintInstance.SetLinearXMotion(ELinearConstraintMotion::LCM_Free);
 		ConstraintInstance.SetLinearYMotion(ELinearConstraintMotion::LCM_Free);
 		ConstraintInstance.SetLinearZMotion(ELinearConstraintMotion::LCM_Free);
 
-		//ConstraintInstance.LinearLimitSize = 0;
+		// ConstraintInstance.LinearLimitSize = 0;
 
-		//ConstraintInstance.SetAngularSwing1Motion(EAngularConstraintMotion::ACM_Limited);
+		// ConstraintInstance.SetAngularSwing1Motion(EAngularConstraintMotion::ACM_Limited);
 		ConstraintInstance.SetAngularSwing2Motion(EAngularConstraintMotion::ACM_Limited);
 		ConstraintInstance.SetAngularTwistMotion(EAngularConstraintMotion::ACM_Limited);
 
 		ConstraintInstance.SetOrientationDriveTwistAndSwing(true, true);
 
-		//ConstraintInstance.SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0);
+		// ConstraintInstance.SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0);
 		ConstraintInstance.SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 0);
 		ConstraintInstance.SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0);
 
@@ -189,16 +177,15 @@ void UBuoyancyComponent::ApplyUprightConstraint()
 
 		ConstraintInstance.AngularRotationOffset = UpdatedPrimitive->GetComponentRotation().GetInverse() + StayUprightDesiredRotation;
 
-		//UPhysicsConstraintComponent* ConstraintComp = NewObject<UPhysicsConstraintComponent>(UpdatedPrimitive);
+		// UPhysicsConstraintComponent* ConstraintComp = NewObject<UPhysicsConstraintComponent>(UpdatedPrimitive);
 		if (ConstraintComp)
 		{
 			ConstraintComp->ConstraintInstance = ConstraintInstance; //Set instance parameters
 			ConstraintComp->SetWorldLocation(UpdatedPrimitive->GetComponentLocation());
 
-			//Attach
+			// Attach
 			ConstraintComp->AttachToComponent(UpdatedComponent, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 			ConstraintComp->SetConstrainedComponents(UpdatedPrimitive, NAME_None, NULL, NAME_None);
-			ConstraintComp->RegisterComponent();
 		}
 	}
 }

@@ -39,7 +39,14 @@ struct BUOYANCYPLUGIN_API FStructBoneOverride
 UCLASS(hidecategories=(Object, Mobility, LOD), ClassGroup=Physics, showcategories=Trigger, MinimalAPI, meta=(BlueprintSpawnableComponent))
 class UBuoyancyForceComponent : public USceneComponent
 {
-	GENERATED_UCLASS_BODY()
+	GENERATED_BODY()
+
+public:
+	UBuoyancyForceComponent(const class FObjectInitializer& ObjectInitializer);
+
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void InitializeComponent() override;
+
 
 	/* OceanManager used by the component, if unassigned component will auto-detect */
 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category = "Buoyancy Settings")
@@ -133,11 +140,6 @@ class UBuoyancyForceComponent : public USceneComponent
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Buoyancy Settings")
 	TEnumAsByte<enum ETickingGroup> TickGroup;
-
-	//Begin UActorComponent Interface
-	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
-	virtual void InitializeComponent() override;
-	//End UActorComponent Interface
 
 private:
 

@@ -17,7 +17,7 @@ class BUOYANCYPLUGIN_API UWaterHeightmapComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-   public:
+public:
 	float GetHeightAtPosition(const FVector& Position);
 
 	// Represents the plane defined by the three points in a triangle.
@@ -29,7 +29,7 @@ class BUOYANCYPLUGIN_API UWaterHeightmapComponent : public UActorComponent
 		const float e3;
 		const float e4;
 
-		FTrianglePlane(float e1, float e2, float e3, float e4) : e1{e1}, e2{e2}, e3{e3}, e4{e4} {};
+		FTrianglePlane(float e1, float e2, float e3, float e4) : e1{ e1 }, e2{ e2 }, e3{ e3 }, e4{ e4 } {};
 		static FTrianglePlane FromTriangle(const FVector& A, const FVector& B, const FVector& C);
 		// Get the height of a world position, using the triangle plane.
 		float GetHeightAtPosition(const FVector2D& Position) const;
@@ -40,42 +40,42 @@ class BUOYANCYPLUGIN_API UWaterHeightmapComponent : public UActorComponent
 	{
 		int32 X;
 		int32 Y;
-		FIntVector2D(int32 X, int32 Y) : X{X}, Y{Y} {};
+		FIntVector2D(int32 X, int32 Y) : X{ X }, Y{ Y } {};
 	};
 
 	// Desired size for a square cell in the water patch.
 	// This value might be rounded by the algorithm to make sure no cells are cut.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water Patch")
-	float DesiredCellSize = 300.f;
+		float DesiredCellSize = 300.f;
 
 	// Only use colliding components be used to determine the water patch size?
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water Patch")
-	bool bOnlyCollidingComponents = false;
+		bool bOnlyCollidingComponents = false;
 
 	// How much big should the patch be, relative to the parent actor. 1 is the same.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water Patch")
-	float GridSizeMultiplier = 1.f;
+		float GridSizeMultiplier = 1.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	bool bDrawUsedTriangles = false;
+		bool bDrawUsedTriangles = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	bool bDrawHeightmap = false;
+		bool bDrawHeightmap = false;
 
 	UWaterHeightmapComponent();
 
-   protected:
+protected:
 	virtual void TickComponent(float DeltaTime,
-	                           ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
+		ELevelTick TickType,
+		FActorComponentTickFunction* ThisTickFunction) override;
 
-   private:
+private:
 	// Width and height of the grid in Unreal units.
 	FVector2D GridSizeInUU = FVector2D::ZeroVector;
 	FVector2D GridCenter = FVector2D::ZeroVector;
 	FVector2D LowerLeftGridCorner = FVector2D::ZeroVector;
 	// Number of rows and columns in the grid.
-	FIntVector2D GridSizeInCells = FIntVector2D{0, 0};
+	FIntVector2D GridSizeInCells = FIntVector2D{ 0, 0 };
 
 	// Effecte width and height of a grid cell (can be different from DesiredCellSize).
 	FVector2D CellSize = FVector2D::ZeroVector;
@@ -105,15 +105,15 @@ class BUOYANCYPLUGIN_API UWaterHeightmapComponent : public UActorComponent
 
 	FVector GetSurfaceVertex(const FIntVector2D VertexCoordinates);
 	FTrianglePlane GetTrianglePlane(TArray<TOptional<FTrianglePlane>> TrianglePlanes,
-	                                const FIntVector2D& CellCoordinates,
-	                                const FIntVector2D& Vertex1GridCoordinates,
-	                                const FIntVector2D& Vertex2GridCoordinates,
-	                                const FIntVector2D& Vertex3GridCoordinates);
+		const FIntVector2D& CellCoordinates,
+		const FIntVector2D& Vertex1GridCoordinates,
+		const FIntVector2D& Vertex2GridCoordinates,
+		const FIntVector2D& Vertex3GridCoordinates);
 	FTrianglePlane GetLowerRightTrianglePlane(const FIntVector2D& CellCoordinates);
 	FTrianglePlane GetUpperLeftTrianglePlane(const FIntVector2D& CellCoordinates);
 
 	void DrawHeightmap();
 
 	UPROPERTY()
-	AOceanManager* OceanManager = nullptr;
+		AOceanManager* OceanManager = nullptr;
 };

@@ -12,7 +12,10 @@
 UCLASS(ClassGroup = Physics, hidecategories = (Object, Mesh, "Components|SkinnedMesh", Mirroring, Activation, "Components|Activation"), config = Engine, editinlinenew, meta = (BlueprintSpawnableComponent))
 class BUOYANCYPLUGIN_API UBuoyantDestructibleComponent : public UDestructibleComponent
 {
-	GENERATED_UCLASS_BODY()
+	GENERATED_BODY()
+
+public:
+	UBuoyantDestructibleComponent(const class FObjectInitializer& ObjectInitializer);
  
 protected:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;

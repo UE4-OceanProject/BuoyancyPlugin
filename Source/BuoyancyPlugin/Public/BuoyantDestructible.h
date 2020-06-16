@@ -11,9 +11,11 @@
 UCLASS()
 class BUOYANCYPLUGIN_API ABuoyantDestructible : public AActor
 {
-	GENERATED_UCLASS_BODY()
- 
+	GENERATED_BODY()
+
 public:
+	ABuoyantDestructible(const class FObjectInitializer& ObjectInitializer);
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = BuoyantDestructible, meta = (ExposeFunctionCategories = "Destruction,Components|Destructible,Buoyancy Settings,Advanced", AllowPrivateAccess = "true"))
 	UBuoyantDestructibleComponent* BuoyantDestructibleComponent;
 };
