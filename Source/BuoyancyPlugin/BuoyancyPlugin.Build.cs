@@ -37,6 +37,7 @@ public class BuoyancyPlugin : ModuleRules
 			{
 				"CoreUObject",
 				"Engine",
+				"Landscape",
 				"PhysX",
 				"APEX",
 				"ApexDestruction",
