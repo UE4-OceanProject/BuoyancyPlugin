@@ -9,7 +9,7 @@ struct FBuoyantMeshSubtriangle;
 
 
 /*
-This class calculates the buoyancy forces on a triangle.
+This class calculates the buoyant forces on a triangle.
 Of the triangle, only the submerged part is taken into account.
 
 The algorithm is described in "Water interaction model for boats in video

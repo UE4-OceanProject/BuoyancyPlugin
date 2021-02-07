@@ -1,7 +1,7 @@
 // For copyright see LICENSE in EnvironmentProject root dir, or:
 //https://github.com/UE4-OceanProject/OceanProject/blob/Master-Environment-Project/LICENSE
 
-#include "BuoyancyComponent.h"
+#include "BuoyantComponent.h"
 #include "DrawDebugHelpers.h"
 #include "EngineUtils.h"
 #include "Components/PrimitiveComponent.h"
@@ -9,12 +9,12 @@
 #include "PhysicsEngine/ConstraintInstance.h"
 
 
-UBuoyancyComponent::UBuoyancyComponent(const class FObjectInitializer& ObjectInitializer)
+UBuoyantComponent::UBuoyantComponent(const class FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 }
 
-void UBuoyancyComponent::InitializeComponent()
+void UBuoyantComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 
@@ -46,14 +46,14 @@ void UBuoyancyComponent::InitializeComponent()
 	}
 }
 
-void UBuoyancyComponent::BeginPlay()
+void UBuoyantComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
 	ApplyUprightConstraint();
 }
 
-void UBuoyancyComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UBuoyantComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	// Make sure everything is valid
 	if (!OceanManager || !UpdatedComponent || !UpdatedPrimitive) return;
@@ -66,7 +66,7 @@ void UBuoyancyComponent::TickComponent(float DeltaTime, enum ELevelTick TickType
 		return;
 	}
 
-	// Buoyancy
+	// Buoyant
 	const float TotalPoints = TestPoints.Num();
 	if (TotalPoints < 1) return;
 
@@ -80,7 +80,7 @@ void UBuoyancyComponent::TickComponent(float DeltaTime, enum ELevelTick TickType
 		FVector WorldTestPoint = UpdatedComponent->GetComponentTransform().TransformPosition(TestPoint);
 		const float WaveHeight = OceanManager->GetWaveHeightValue(WorldTestPoint).Z;
 
-		// If test point radius is touching water add buoyancy force
+		// If test point radius is touching water add Buoyant force
 		if (WaveHeight > (WorldTestPoint.Z + SignedRadius))
 		{
 			PointsUnderWater++;
@@ -94,10 +94,10 @@ void UBuoyancyComponent::TickComponent(float DeltaTime, enum ELevelTick TickType
 
 			/**
 			* --------
-			* Buoyancy force formula: (Volume(Mass / Density) * Fluid Density * -Gravity) / Total Points * Depth Multiplier
+			* Buoyant force formula: (Volume(Mass / Density) * Fluid Density * -Gravity) / Total Points * Depth Multiplier
 			* --------
 			*/
-			const float BuoyancyForceZ = UpdatedPrimitive->GetMass() / PointDensity * FluidDensity * -GetGravityZ() / TotalPoints * DepthMultiplier;
+			const float BuoyantForceZ = UpdatedPrimitive->GetMass() / PointDensity * FluidDensity * -GetGravityZ() / TotalPoints * DepthMultiplier;
 
 			// Experimental velocity damping using GetUnrealWorldVelocityAtPoint!
 			FVector DampingForce = -GetVelocityAtPoint(UpdatedPrimitive, WorldTestPoint) * VelocityDamper * UpdatedPrimitive->GetMass() * DepthMultiplier;
@@ -110,7 +110,7 @@ void UBuoyancyComponent::TickComponent(float DeltaTime, enum ELevelTick TickType
 			}
 
 			// Add force for this test point
-			UpdatedPrimitive->AddForceAtLocation(FVector(DampingForce.X, DampingForce.Y, DampingForce.Z + BuoyancyForceZ), WorldTestPoint);
+			UpdatedPrimitive->AddForceAtLocation(FVector(DampingForce.X, DampingForce.Y, DampingForce.Z + BuoyantForceZ), WorldTestPoint);
 		}
 
 		if (DrawDebugPoints)
@@ -134,7 +134,7 @@ void UBuoyancyComponent::TickComponent(float DeltaTime, enum ELevelTick TickType
 	UpdatedPrimitive->SetAngularDamping(BaseAngularDamping + FluidAngularDamping / TotalPoints * PointsUnderWater);
 }
 
-FVector UBuoyancyComponent::GetVelocityAtPoint(UPrimitiveComponent* Target, FVector Point, FName BoneName)
+FVector UBuoyantComponent::GetVelocityAtPoint(UPrimitiveComponent* Target, FVector Point, FName BoneName)
 {
 	if (!Target) return FVector::ZeroVector;
 
@@ -147,7 +147,7 @@ FVector UBuoyancyComponent::GetVelocityAtPoint(UPrimitiveComponent* Target, FVec
 	return FVector::ZeroVector;
 }
 
-void UBuoyancyComponent::ApplyUprightConstraint()
+void UBuoyantComponent::ApplyUprightConstraint()
 {
 	// Stay upright physics constraint (inspired by UDK's StayUprightSpring)
 	if (EnableStayUprightConstraint)

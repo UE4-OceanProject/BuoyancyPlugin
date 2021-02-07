@@ -28,7 +28,7 @@ struct FTriangleMesh
 
 /*
 
-This component applies to the root component buoyancy forces modeled from a static mesh.
+This component applies to the root component Buoyant forces modeled from a static mesh.
 The algorithm used is described in "Water interaction model for boats in video
 games" by Jacques Kerner.
 http://gamasutra.com/view/news/237528/Water_interaction_model_for_boats_in_video_games.php
@@ -50,28 +50,28 @@ class BUOYANCYPLUGIN_API UBuoyantMeshComponent : public UStaticMeshComponent
 	// automatically select the first UPrimitiveComponent parent, or itself if one is not found.
 	UPrimitiveComponent* UpdatedComponent;
 
-	// Only use the vertical component of the buoyancy forces.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buoyancy Settings")
+	// Only use the vertical component of the buoyant forces.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buoyant Settings")
 	bool bVerticalForcesOnly = false;
 
 	// Use a WaterPatchComponent to possibly improve performance.
 	// This actor needs a WaterPatchComponent for this to work.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buoyancy Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buoyant Settings")
 	bool bUseWaterPatch = true;
 
-	// Use hydrostatic (buoyancy) forces if true.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buoyancy Settings")
+	// Use hydrostatic (buoyant) forces if true.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buoyant Settings")
 	bool bUseStaticForces = true;
 
 	// Use hydrodynamic (drag) forces if true.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buoyancy Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buoyant Settings")
 	bool bUseDynamicForces = true;
 
 	// OceanManager used by the component, if unassigned component will auto-detect.
-	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category = "Buoyancy Settings")
+	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category = "Buoyant Settings")
 	AOceanManager* OceanManager = nullptr;
 
-	// Draw arrows representing the buoyancy forces pushing on the mesh?
+	// Draw arrows representing the buoyant forces pushing on the mesh?
 	// The length is proportional to the force magnitude.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
 	bool bDrawForceArrows = false;

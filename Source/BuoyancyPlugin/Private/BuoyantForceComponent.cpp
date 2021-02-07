@@ -1,7 +1,7 @@
 // For copyright see LICENSE in EnvironmentProject root dir, or:
 //https://github.com/UE4-OceanProject/OceanProject/blob/Master-Environment-Project/LICENSE
 
-#include "BuoyancyForceComponent.h"
+#include "BuoyantForceComponent.h"
 #include "Engine/World.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "Components/PrimitiveComponent.h"
@@ -11,7 +11,7 @@
 #include "GameFramework/PhysicsVolume.h"
 #include "PhysicsEngine/ConstraintInstance.h"
  	
-UBuoyancyForceComponent::UBuoyancyForceComponent(const class FObjectInitializer& ObjectInitializer)
+UBuoyantForceComponent::UBuoyantForceComponent(const class FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer) 
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -35,7 +35,7 @@ UBuoyancyForceComponent::UBuoyancyForceComponent(const class FObjectInitializer&
 	WaveForceMultiplier = 2.0f;
 }
 
-void UBuoyancyForceComponent::InitializeComponent()
+void UBuoyantForceComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 
@@ -65,7 +65,7 @@ void UBuoyancyForceComponent::InitializeComponent()
 	}
 }
 
-void UBuoyancyForceComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
+void UBuoyantForceComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
@@ -102,7 +102,7 @@ void UBuoyancyForceComponent::TickComponent(float DeltaTime, enum ELevelTick Tic
 		{
 			FBodyInstance* BI = SkeletalComp->GetBodyInstance(BoneNames[Itr], false);
 			if (BI && BI->IsValidBodyInstance()
-				&& BI->bEnableGravity) //Buoyancy doesn't exist without gravity
+				&& BI->bEnableGravity) //Buoyant doesn't exist without gravity
 			{
 				bool isUnderwater = false;
 				//FVector worldBoneLoc = SkeletalComp->GetBoneLocation(BoneNames[Itr]);
@@ -126,7 +126,7 @@ void UBuoyancyForceComponent::TickComponent(float DeltaTime, enum ELevelTick Tic
 					}
 				}
 
-				//If test point radius is below water surface, add buoyancy force.
+				//If test point radius is below water surface, add Buoyant force.
 				if (waveHeight.Z > (worldBoneLoc.Z + SignedBoneRadius))
 				{
 					isUnderwater = true;
@@ -138,10 +138,10 @@ void UBuoyancyForceComponent::TickComponent(float DeltaTime, enum ELevelTick Tic
 
 					 /**
 					* --------
-					* Buoyancy force formula: (Volume(Mass / Density) * Fluid Density * -Gravity) / Total Points * Depth Multiplier
+					* Buoyant force formula: (Volume(Mass / Density) * Fluid Density * -Gravity) / Total Points * Depth Multiplier
 					* --------
 					*/
-					float BuoyancyForceZ = Mass / BoneDensity * FluidDensity * -Gravity * DepthMultiplier;
+					float BuoyantForceZ = Mass / BoneDensity * FluidDensity * -Gravity * DepthMultiplier;
 
 					//Velocity damping.
 					FVector DampingForce = -BI->GetUnrealWorldVelocity() * VelocityDamper * Mass * DepthMultiplier;
@@ -154,8 +154,8 @@ void UBuoyancyForceComponent::TickComponent(float DeltaTime, enum ELevelTick Tic
 					}
 
 					//Add force to this bone
-					BI->AddForce(FVector(DampingForce.X, DampingForce.Y, DampingForce.Z + BuoyancyForceZ));
-					//BasePrimComp->AddForceAtLocation(FVector(DampingForce.X, DampingForce.Y, DampingForce.Z + BuoyancyForceZ), worldBoneLoc, BoneNames[Itr]);
+					BI->AddForce(FVector(DampingForce.X, DampingForce.Y, DampingForce.Z + BuoyantForceZ));
+					//BasePrimComp->AddForceAtLocation(FVector(DampingForce.X, DampingForce.Y, DampingForce.Z + BuoyantForceZ), worldBoneLoc, BoneNames[Itr]);
 				}
 
 				//Apply fluid damping & clamp velocity
@@ -200,9 +200,9 @@ void UBuoyancyForceComponent::TickComponent(float DeltaTime, enum ELevelTick Tic
 		//Direction of radius (test radius is actually a Z offset, should probably rename it!). Just in case we need an upside down world.
 		float SignedRadius = FMath::Sign(BasePrimComp->GetPhysicsVolume()->GetGravityZ()) * TestPointRadius;
 
-		//If test point radius is below water surface, add buoyancy force.
+		//If test point radius is below water surface, add Buoyant force.
 		if (waveHeight.Z > (worldTestPoint.Z + SignedRadius)
-			&& BasePrimComp->IsGravityEnabled()) //Buoyancy doesn't exist without gravity
+			&& BasePrimComp->IsGravityEnabled()) //Buoyant doesn't exist without gravity
 		{
 			PointsUnderWater++;
 			isUnderwater = true;
@@ -215,10 +215,10 @@ void UBuoyancyForceComponent::TickComponent(float DeltaTime, enum ELevelTick Tic
 
 			/**
 			* --------
-			* Buoyancy force formula: (Volume(Mass / Density) * Fluid Density * -Gravity) / Total Points * Depth Multiplier
+			* Buoyant force formula: (Volume(Mass / Density) * Fluid Density * -Gravity) / Total Points * Depth Multiplier
 			* --------
 			*/
-			float BuoyancyForceZ = BasePrimComp->GetMass() / PointDensity * FluidDensity * -Gravity / TotalPoints * DepthMultiplier;
+			float BuoyantForceZ = BasePrimComp->GetMass() / PointDensity * FluidDensity * -Gravity / TotalPoints * DepthMultiplier;
 
 			//Experimental velocity damping using GetUnrealWorldVelocityAtPoint!
 			FVector DampingForce = -GetUnrealVelocityAtPoint(BasePrimComp, worldTestPoint) * VelocityDamper * BasePrimComp->GetMass() * DepthMultiplier;
@@ -232,7 +232,7 @@ void UBuoyancyForceComponent::TickComponent(float DeltaTime, enum ELevelTick Tic
 			}
 
 			//Add force for this test point
-			BasePrimComp->AddForceAtLocation(FVector(DampingForce.X, DampingForce.Y, DampingForce.Z + BuoyancyForceZ), worldTestPoint);
+			BasePrimComp->AddForceAtLocation(FVector(DampingForce.X, DampingForce.Y, DampingForce.Z + BuoyantForceZ), worldTestPoint);
 		}
 
 		if (DrawDebugPoints)
@@ -256,7 +256,7 @@ void UBuoyancyForceComponent::TickComponent(float DeltaTime, enum ELevelTick Tic
 	BasePrimComp->SetAngularDamping(_baseAngularDamping + FluidAngularDamping / TotalPoints * PointsUnderWater);
 }
 
-FVector UBuoyancyForceComponent::GetUnrealVelocityAtPoint(UPrimitiveComponent* Target, FVector Point, FName BoneName)
+FVector UBuoyantForceComponent::GetUnrealVelocityAtPoint(UPrimitiveComponent* Target, FVector Point, FName BoneName)
 {
 	if (!Target) return FVector::ZeroVector;
 
@@ -269,7 +269,7 @@ FVector UBuoyancyForceComponent::GetUnrealVelocityAtPoint(UPrimitiveComponent* T
 	return FVector::ZeroVector;
 }
 
-void UBuoyancyForceComponent::ApplyUprightConstraint(UPrimitiveComponent* BasePrimComp)
+void UBuoyantForceComponent::ApplyUprightConstraint(UPrimitiveComponent* BasePrimComp)
 {
 	//Stay upright physics constraint (inspired by UDK's StayUprightSpring)
 	if (EnableStayUprightConstraint)

@@ -81,7 +81,7 @@ void UBuoyantDestructibleComponent::TickComponent(float DeltaTime, enum ELevelTi
 			float waveHeight = OceanManager->GetWaveHeightValue(Location).Z;
 			bool isUnderwater = false;
 
-			//If test point radius is touching water add buoyancy force
+			//If test point radius is touching water add Buoyant force
 			if (waveHeight > (Location.Z + _SignedRadius))
 			{
 				isUnderwater = true;
@@ -91,10 +91,10 @@ void UBuoyantDestructibleComponent::TickComponent(float DeltaTime, enum ELevelTi
 
 				/**
 				* --------
-				* Buoyancy force formula: (Volume(Mass / Density) * Fluid Density * -Gravity) * Depth Multiplier
+				* Buoyant force formula: (Volume(Mass / Density) * Fluid Density * -Gravity) * Depth Multiplier
 				* --------
 				*/
-				float BuoyancyForceZ = Chunk->getMass() / ChunkDensity * FluidDensity * -Gravity * DepthMultiplier;
+				float BuoyantForceZ = Chunk->getMass() / ChunkDensity * FluidDensity * -Gravity * DepthMultiplier;
 
 				//Velocity damping
 				FVector DampingForce = -P2UVector(Chunk->getLinearVelocity()) * VelocityDamper * Chunk->getMass() * DepthMultiplier;
@@ -107,7 +107,7 @@ void UBuoyantDestructibleComponent::TickComponent(float DeltaTime, enum ELevelTi
 				}
 
 				//Add force for this chunk
-				Chunk->addForce(PxVec3(DampingForce.X, DampingForce.Y, DampingForce.Z + BuoyancyForceZ), PxForceMode::eFORCE, true);
+				Chunk->addForce(PxVec3(DampingForce.X, DampingForce.Y, DampingForce.Z + BuoyantForceZ), PxForceMode::eFORCE, true);
 			}
 
 			if (DrawDebugPoints)
@@ -150,7 +150,7 @@ void UBuoyantDestructibleComponent::TickComponent(float DeltaTime, enum ELevelTi
 // 
 // 		//ChunkBI->GetBodyMass()
 // 
-// 		//If test point radius is touching water add buoyancy force
+// 		//If test point radius is touching water add Buoyant force
 // 		if (waveHeight > (Location.Z + _SignedRadius))
 // 		{
 // 			isUnderwater = true;
@@ -160,10 +160,10 @@ void UBuoyantDestructibleComponent::TickComponent(float DeltaTime, enum ELevelTi
 // 
 // 			/**
 // 			* --------
-// 			* Buoyancy force formula: (Volume(Mass / Density) * Fluid Density * -Gravity) * Depth Multiplier
+// 			* Buoyant force formula: (Volume(Mass / Density) * Fluid Density * -Gravity) * Depth Multiplier
 // 			* --------
 // 			*/
-// 			float BuoyancyForceZ = ChunkBI->GetBodyMass() / ChunkDensity * FluidDensity * -Gravity * DepthMultiplier;
+// 			float BuoyantForceZ = ChunkBI->GetBodyMass() / ChunkDensity * FluidDensity * -Gravity * DepthMultiplier;
 // 
 // 			//Velocity damping
 // 			FVector DampingForce = ChunkBI->GetUnrealWorldVelocity() * VelocityDamper * ChunkBI->GetBodyMass() * DepthMultiplier;
@@ -176,7 +176,7 @@ void UBuoyantDestructibleComponent::TickComponent(float DeltaTime, enum ELevelTi
 // 			}
 // 
 // 			//Add force for this chunk
-// 			ChunkBI->AddForce(FVector(DampingForce.X, DampingForce.Y, DampingForce.Z + BuoyancyForceZ));
+// 			ChunkBI->AddForce(FVector(DampingForce.X, DampingForce.Y, DampingForce.Z + BuoyantForceZ));
 // 		}
 // 
 // 		if (DrawDebugPoints)

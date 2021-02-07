@@ -16,6 +16,6 @@ class BUOYANCYPLUGIN_API ABuoyantDestructible : public AActor
 public:
 	ABuoyantDestructible(const class FObjectInitializer& ObjectInitializer);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = BuoyantDestructible, meta = (ExposeFunctionCategories = "Destruction,Components|Destructible,Buoyancy Settings,Advanced", AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = BuoyantDestructible, meta = (ExposeFunctionCategories = "Destruction,Components|Destructible,Buoyant Settings,Advanced", AllowPrivateAccess = "true"))
 	UBuoyantDestructibleComponent* BuoyantDestructibleComponent;
 };

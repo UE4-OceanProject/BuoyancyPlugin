@@ -1,7 +1,7 @@
 // For copyright see LICENSE in EnvironmentProject root dir, or:
 //https://github.com/UE4-OceanProject/OceanProject/blob/Master-Environment-Project/LICENSE
 
-#include "AdvancedBuoyancyComponent/AdvancedBuoyancyComponent.h"
+#include "AdvancedBuoyantComponent/AdvancedBuoyantComponent.h"
 #include "Engine/StaticMesh.h"
 #include "StaticMeshResources.h"
 #include "DrawDebugHelpers.h"
@@ -9,7 +9,7 @@
 
 
 // Constructor
-UAdvancedBuoyancyComponent::UAdvancedBuoyancyComponent()
+UAdvancedBuoyantComponent::UAdvancedBuoyantComponent()
 {
 	// Tick
 	PrimaryComponentTick.TickGroup = TG_PrePhysics;
@@ -22,7 +22,7 @@ UAdvancedBuoyancyComponent::UAdvancedBuoyancyComponent()
 
 
 // Initialize
-void UAdvancedBuoyancyComponent::InitializeComponent()
+void UAdvancedBuoyantComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 	World = GetWorld();
@@ -31,7 +31,7 @@ void UAdvancedBuoyancyComponent::InitializeComponent()
 	CorrectedWaterDensity = WaterDensity / 1000000.f; // kg / m^3 to cm^3
 	Gravity = World->GetGravityZ();
 
-	// Get the static mesh component we are checking for buoyancy and ensure it has a valid static mesh assigned
+	// Get the static mesh component we are checking for Buoyant and ensure it has a valid static mesh assigned
 	if (!BuoyantMesh) { BuoyantMesh = Cast<UStaticMeshComponent>(GetAttachParent()); }
 	if (!BuoyantMesh) { GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("Mesh Missed"))); return; }
 	if (!BuoyantMesh->GetStaticMesh()) { GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("Mesh Mesh Missed"))); return; }
@@ -51,26 +51,26 @@ void UAdvancedBuoyancyComponent::InitializeComponent()
 
 
 // Called every frame
-void UAdvancedBuoyancyComponent::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
+void UAdvancedBuoyantComponent::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
 
-	// Advanced buoyancy using a static mesh triangles
+	// Advanced Buoyant using a static mesh triangles
 
 	if (!TheOcean) {
 		GetOcean();
 		return;
 	}
 
-	AdvancedBuoyancy();
+	AdvancedBuoyant();
 
 }
 
 
-TArray<FForceTriangle> UAdvancedBuoyancyComponent::SplitTriangle(FBuoyancyVertex H, FBuoyancyVertex M, FBuoyancyVertex L, FVector OutArrow)
+TArray<FForceTriangle> UAdvancedBuoyantComponent::SplitTriangle(FBuoyantVertex H, FBuoyantVertex M, FBuoyantVertex L, FVector OutArrow)
 {
 	TArray<FForceTriangle> ReturnTriangles;
-	FBuoyancyVertex CutVertex; 
+	FBuoyantVertex CutVertex; 
 	CutVertex.Position = ((L.Position - H.Position) * (H.Position.Z - M.Position.Z) / (H.Position.Z - L.Position.Z) + H.Position); CutVertex.Depth = GetOceanDepthFromGrid(CutVertex.Position);
 
 	ReturnTriangles.Emplace(L, CutVertex, M, OutArrow, true);
@@ -92,26 +92,26 @@ TArray<FForceTriangle> UAdvancedBuoyancyComponent::SplitTriangle(FBuoyancyVertex
 	return ReturnTriangles;
 }
 
-void UAdvancedBuoyancyComponent::ApplyForce(FForceTriangle TriForce)
+void UAdvancedBuoyantComponent::ApplyForce(FForceTriangle TriForce)
 {
 	float FLDM = 1.f;  // Force Line Debug Multiplier
 
 	if (TriForce.TriArea < .001f) { return; }
-	// Static buoyancy
+	// Static Buoyant
 
 	// The range for this can be set in the initial mesh analysis
-	float PitchBuoyancyReductionOffset = 1 - BuoyancyPitchReductionCoefficient * FMath::Clamp(BuoyantMesh->GetComponentTransform().InverseTransformPosition(TriForce.Center.Position).X + 400.f, 0.f, 800.f) / 800.f;
+	float PitchBuoyantReductionOffset = 1 - BuoyantPitchReductionCoefficient * FMath::Clamp(BuoyantMesh->GetComponentTransform().InverseTransformPosition(TriForce.Center.Position).X + 400.f, 0.f, 800.f) / 800.f;
 	TriForce.SetForce();
 
-	FVector StaticBuoyancyForce = TriForce.Force * ForceC * FVector(1.f, 1.f, 1.f - BuoyancyReductionCoefficient) * FVector(1.f, 1.f, PitchBuoyancyReductionOffset) * DensityCorrectionModifier;
+	FVector StaticBuoyantForce = TriForce.Force * ForceC * FVector(1.f, 1.f, 1.f - BuoyantReductionCoefficient) * FVector(1.f, 1.f, PitchBuoyantReductionOffset) * DensityCorrectionModifier;
 
-	if (!FMath::IsNearlyZero(StaticBuoyancyForce.Size())) {
-		BuoyantMesh->AddForceAtLocation(StaticBuoyancyForce, TriForce.ForceCenter);
+	if (!FMath::IsNearlyZero(StaticBuoyantForce.Size())) {
+		BuoyantMesh->AddForceAtLocation(StaticBuoyantForce, TriForce.ForceCenter);
 	}
 	if (bDebugOn) {
 		FLDM = .0001f;
-		DrawDebugLine(World, TriForce.ForceCenter - StaticBuoyancyForce * FLDM, TriForce.ForceCenter - StaticBuoyancyForce * .1f * FLDM, FColor::Red, false, -1.f, 0, 4.f);
-		DrawDebugLine(World, TriForce.ForceCenter - StaticBuoyancyForce * .1f * FLDM, TriForce.ForceCenter, FColor::Orange, false, -1.f, 0, 4.f);
+		DrawDebugLine(World, TriForce.ForceCenter - StaticBuoyantForce * FLDM, TriForce.ForceCenter - StaticBuoyantForce * .1f * FLDM, FColor::Red, false, -1.f, 0, 4.f);
+		DrawDebugLine(World, TriForce.ForceCenter - StaticBuoyantForce * .1f * FLDM, TriForce.ForceCenter, FColor::Orange, false, -1.f, 0, 4.f);
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -168,14 +168,14 @@ void UAdvancedBuoyancyComponent::ApplyForce(FForceTriangle TriForce)
 		FinalForce += DragForce;
 	}
 	
-	// Non static buoyancy forces are applied to the centroid of the triangle as they do not vary with depth (assuming a constant density)
+	// Non static Buoyant forces are applied to the centroid of the triangle as they do not vary with depth (assuming a constant density)
 	if (!FMath::IsNearlyZero(FinalForce.Size())) {
 		BuoyantMesh->AddForceAtLocation(FinalForce, TriForce.Center.Position);
 	}
 
 }
 
-void UAdvancedBuoyancyComponent::DrawDebugStuff(FForceTriangle TriForce, FColor DebugColor)
+void UAdvancedBuoyantComponent::DrawDebugStuff(FForceTriangle TriForce, FColor DebugColor)
 {
 	if (FMath::IsNearlyZero(TriForce.TriArea)) { return; }
 
@@ -192,7 +192,7 @@ void UAdvancedBuoyancyComponent::DrawDebugStuff(FForceTriangle TriForce, FColor 
 	DrawDebugLine(World, HS, LS, DebugColor, false, -1.f, 0, DebugLineSize);  // triforce outline
 }
 
-void UAdvancedBuoyancyComponent::PopulateTrianglesFromStaticMesh()
+void UAdvancedBuoyantComponent::PopulateTrianglesFromStaticMesh()
 {
 	int32 NumLODs = BuoyantMesh->GetStaticMesh()->RenderData->LODResources.Num();
 	FStaticMeshLODResources& LODResource = BuoyantMesh->GetStaticMesh()->RenderData->LODResources[NumLODs - 1];
@@ -274,7 +274,7 @@ void UAdvancedBuoyancyComponent::PopulateTrianglesFromStaticMesh()
 }
 
 
-void UAdvancedBuoyancyComponent::GetOcean()
+void UAdvancedBuoyantComponent::GetOcean()
 {
 	for (auto Actor : TActorRange<AOceanManager>(GetWorld()))
 	{
@@ -282,7 +282,7 @@ void UAdvancedBuoyancyComponent::GetOcean()
 	}
 }
 
-float UAdvancedBuoyancyComponent::GetOceanDepthFromGrid(FVector Position, bool bJustGetHeightAtLocation)
+float UAdvancedBuoyantComponent::GetOceanDepthFromGrid(FVector Position, bool bJustGetHeightAtLocation)
 {
 	// Localized position is local X and Y but global Z
 	
@@ -304,7 +304,7 @@ float UAdvancedBuoyancyComponent::GetOceanDepthFromGrid(FVector Position, bool b
 	return (Position.Z - InterDepth) / 1.f; // in cm
 }
 
-float UAdvancedBuoyancyComponent::TriangleArea(FVector A, FVector B, FVector C)
+float UAdvancedBuoyantComponent::TriangleArea(FVector A, FVector B, FVector C)
 {
 	FVector SideAB = B - A;
 	FVector SideAC = C - A;
@@ -312,12 +312,12 @@ float UAdvancedBuoyancyComponent::TriangleArea(FVector A, FVector B, FVector C)
 	return LengthMult * .5 * FGenericPlatformMath::Sin(FGenericPlatformMath::Acos(FVector::DotProduct(SideAB.GetSafeNormal(), SideAC.GetSafeNormal())));  // cm^2
 }
 
-void UAdvancedBuoyancyComponent::ApplySlamForce(FVector SlamForce, FVector TriCenter)
+void UAdvancedBuoyantComponent::ApplySlamForce(FVector SlamForce, FVector TriCenter)
 {
 	BuoyantMesh->AddForceAtLocation(SlamForce, TriCenter);
 }
 
-void UAdvancedBuoyancyComponent::AdvancedBuoyancy()
+void UAdvancedBuoyantComponent::AdvancedBuoyant()
 {
 	if (!BuoyantMesh) { BuoyantMesh = Cast<UStaticMeshComponent>(GetAttachParent()); }
 	if (!BuoyantMesh) { GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("Mesh Missed"))); return; }
@@ -343,7 +343,7 @@ void UAdvancedBuoyancyComponent::AdvancedBuoyancy()
 		}
 	}
 
-	FBuoyancyVertex TempVertex;
+	FBuoyantVertex TempVertex;
 
 	// TODO ***OPTIMIZATION***
 	// Send this to another thread (get data, do work, pass back forces to apply to boat)
@@ -353,7 +353,7 @@ void UAdvancedBuoyancyComponent::AdvancedBuoyancy()
 	for (int32 TriIndex = 0; TriIndex < Triangles.Num(); TriIndex++)
 	{
 		FVector v0; FVector v1; FVector v2;
-		FBuoyancyVertex H; FBuoyancyVertex M; FBuoyancyVertex L;
+		FBuoyantVertex H; FBuoyantVertex M; FBuoyantVertex L;
 
 
 		// TODO ***HIGH PRIORITY OPTIMIZATION*** 
@@ -404,7 +404,7 @@ void UAdvancedBuoyancyComponent::AdvancedBuoyancy()
 			OutArrow.Normalize();
 
 			// New vertices
-			FBuoyancyVertex NewH; FBuoyancyVertex NewM; FBuoyancyVertex NewL;
+			FBuoyantVertex NewH; FBuoyantVertex NewM; FBuoyantVertex NewL;
 			NewH.Position = InterSectPointOne; NewH.Depth = GetOceanDepthFromGrid(InterSectPointOne);
 			NewM.Position = InterSectPointTwo; NewM.Depth = GetOceanDepthFromGrid(InterSectPointTwo);
 			NewL = L;
@@ -459,7 +459,7 @@ void UAdvancedBuoyancyComponent::AdvancedBuoyancy()
 			// Detrapezoidation
 
 			// New vertices 1
-			FBuoyancyVertex NewH1; FBuoyancyVertex NewM1; FBuoyancyVertex NewL1;
+			FBuoyantVertex NewH1; FBuoyantVertex NewM1; FBuoyantVertex NewL1;
 			NewH1.Position = InterSectPointOne; NewH1.Depth = GetOceanDepthFromGrid(InterSectPointOne);
 			NewM1.Position = InterSectPointTwo; NewM1.Depth = GetOceanDepthFromGrid(InterSectPointTwo);
 			NewL1 = M;
@@ -467,7 +467,7 @@ void UAdvancedBuoyancyComponent::AdvancedBuoyancy()
 			if (NewL1.Position.Z > NewH1.Position.Z) { TempVertex = NewH1; NewH1 = NewL1; NewL1 = TempVertex; }
 			if (NewL1.Position.Z > NewM1.Position.Z) { TempVertex = NewM1; NewM1 = NewL1; NewL1 = TempVertex; }
 			// New vertices 2
-			FBuoyancyVertex NewH2; FBuoyancyVertex NewM2; FBuoyancyVertex NewL2;
+			FBuoyantVertex NewH2; FBuoyantVertex NewM2; FBuoyantVertex NewL2;
 			NewH2.Position = InterSectPointOne; NewH2.Depth = GetOceanDepthFromGrid(InterSectPointOne);
 			NewM2 = M;
 			NewL2 = L;
@@ -566,7 +566,7 @@ void UAdvancedBuoyancyComponent::AdvancedBuoyancy()
 	}
 }
 
-void UAdvancedBuoyancyComponent::SetMeshDensity(float NewMeshDensity, float NewWaterDensity)
+void UAdvancedBuoyantComponent::SetMeshDensity(float NewMeshDensity, float NewWaterDensity)
 {
 	MeshDensity = NewMeshDensity;
 	CorrectedMeshDensity = MeshDensity / 1000000.f;
