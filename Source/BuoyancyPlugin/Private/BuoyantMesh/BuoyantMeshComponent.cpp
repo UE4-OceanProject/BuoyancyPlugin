@@ -179,10 +179,10 @@ void UBuoyantMeshComponent::ApplyMeshForces()
 
 	const auto LocalToWorld = GetComponentTransform();
 
-	for (const auto TriangleMesh : TriangleMeshes)
+	for (const auto &TriangleMesh : TriangleMeshes)
 	{
 		TArray<FBuoyantMeshVertex> BuoyantMeshVertices{};
-		for (const auto Vertex : TriangleMesh.Vertices)
+		for (const auto &Vertex : TriangleMesh.Vertices)
 		{
 			const auto WorldVertex = LocalToWorld.TransformPosition(Vertex);
 			BuoyantMeshVertices.Emplace(WorldVertex, GetHeightAboveWater(WorldVertex));
