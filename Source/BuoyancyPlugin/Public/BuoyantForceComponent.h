@@ -78,12 +78,16 @@ public:
 	float MaxUnderwaterVelocity;
 
 	/* Radius of the points. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buoyant Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buoyant Settings", meta = (DisplayName = "Buoyancy Point Radius"))
 	float TestPointRadius;
 
-	/* Test point array. At least one point is required for buoyancy. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buoyant Settings")
+	/* Buoyancy points array. At least one point is required for buoyancy. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buoyant Settings", meta = (DisplayName = "Buoyancy Points"))
 	TArray<FVector> TestPoints;
+
+	/*This returns number of buoyancy points under water. Can be used to check if the mesh is on water or on land*/
+	UPROPERTY(BlueprintReadOnly, Category = "Buoyancy Settings")
+	int32 PointsUnderWater;
 
 	/* If skeletal mesh with physics asset, it will apply buoyant force at the COM of each bone instead of using the test point array. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buoyant Settings")

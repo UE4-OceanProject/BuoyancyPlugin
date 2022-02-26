@@ -187,7 +187,7 @@ void UBuoyantForceComponent::TickComponent(float DeltaTime, enum ELevelTick Tick
 	float TotalPoints = TestPoints.Num();
 	if (TotalPoints < 1) return;
 
-	int PointsUnderWater = 0;
+	PointsUnderWater = 0;
 	for (int pointIndex = 0; pointIndex < TotalPoints; pointIndex++)
 	{
 		if (!TestPoints.IsValidIndex(pointIndex)) return; //Array size changed during runtime
