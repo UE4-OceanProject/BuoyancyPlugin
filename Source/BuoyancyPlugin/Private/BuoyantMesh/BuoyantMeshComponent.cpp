@@ -10,7 +10,7 @@
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
 #include "EngineUtils.h"
-#include "PhysXPublic.h"
+#include "ProceduralMeshComponent/Public/KismetProceduralMeshLibrary.h"
 
 
 using FForce = UBuoyantMeshComponent::FForce;
@@ -192,8 +192,8 @@ void UBuoyantMeshComponent::ApplyMeshForces()
 		for (int32 i = 0; i < TriangleCount; ++i)
 		{
 			const auto A = BuoyantMeshVertices[TriangleMesh.TriangleVertexIndices[i * 3 + 0]];
-			const auto B = BuoyantMeshVertices[TriangleMesh.TriangleVertexIndices[i * 3 + 1]];
-			const auto C = BuoyantMeshVertices[TriangleMesh.TriangleVertexIndices[i * 3 + 2]];
+			const auto B = BuoyantMeshVertices[TriangleMesh.TriangleVertexIndices[i * 3 + 2]];
+			const auto C = BuoyantMeshVertices[TriangleMesh.TriangleVertexIndices[i * 3 + 1]];
 
 			if (bDrawTriangles)
 			{
@@ -259,56 +259,38 @@ FForce UBuoyantMeshComponent::GetSubmergedTriangleForce(const FBuoyantMeshSubtri
 	return FForce{Force, CenterPosition};
 }
 
-TArray<FVector> TMeshUtilities::GetVertices(const PxTriangleMesh* TriangleMesh)
-{
-	// Get vertices
-	const PxVec3* const VerticesPx = TriangleMesh->getVertices();
-	const PxU32 VertexCount = TriangleMesh->getNbVertices();
-
-	TArray<FVector> VerticesUE;
-	for (PxU32 VertexIndex = 0; VertexIndex < VertexCount; ++VertexIndex)
-	{
-		VerticesUE.Add(P2UVector(VerticesPx[VertexIndex]));
-	}
-	return VerticesUE;
-}
-
-TArray<int32> TMeshUtilities::GetTriangleVertexIndices(const PxTriangleMesh* TriangleMesh)
-{
-	// Get triangles
-	const PxU32 TriangleCount = TriangleMesh->getNbTriangles();
-	const void* const TriangleVertexIndicesPx = TriangleMesh->getTriangles();
-	const auto b16BitIndices = TriangleMesh->getTriangleMeshFlags() & PxTriangleMeshFlag::e16_BIT_INDICES;
-
-	TArray<int32> TriangleVertexIndicesUE;
-	for (PxU32 i = 0.f; i < TriangleCount * 3; ++i)
-	{
-		if (b16BitIndices)
-		{
-			const auto Indices = static_cast<const PxU16*>(TriangleVertexIndicesPx);
-			TriangleVertexIndicesUE.Add(Indices[i]);
-		}
-		else
-		{
-			const auto Indices = static_cast<const PxU32*>(TriangleVertexIndicesPx);
-			TriangleVertexIndicesUE.Add(Indices[i]);
-		}
-	}
-	return TriangleVertexIndicesUE;
-}
-
-// Reference: https://wiki.unrealengine.com/Accessing_mesh_triangles_and_vertex_positions_in_build
+// Reference: https://wiki.unrealengine.com/Accessing_mesh_triangles_and_vertex_positions_in_build --> Not working in UE5 since Physx is removed
+// We convert the mesh to Procedural Mesh to get vertices/triangles data but Allow CPU Access must be enabled in static mesh properties to work in cooked builds
 TArray<FTriangleMesh> TMeshUtilities::GetTriangleMeshes(UStaticMeshComponent* StaticMeshComponent)
 {
 	if (!StaticMeshComponent) return {};
-	const auto BodySetup = StaticMeshComponent->GetBodySetup();
-	if (!BodySetup) return {};
+
+	#if !WITH_EDITOR
+	if (!StaticMeshComponent->GetStaticMesh()->bAllowCPUAccess) return {};
+	#endif
 
 	TArray<FTriangleMesh> Meshes;
-	for (const auto TriangleMesh : BodySetup->TriMeshes)
-	{
-		Meshes.Emplace(GetVertices(TriangleMesh), GetTriangleVertexIndices(TriangleMesh));
+	int32 Sections = StaticMeshComponent->GetStaticMesh()->GetNumSections(0);
+	TArray<FVector> CurrentSectionVertices;
+	TArray<FVector> TotalSectionsVertices;
+	TArray<int32> CurrentSectionTriangles;
+	TArray<int32> TotalSectionsTriangles;
+	TArray<FVector> Normals;
+	TArray<FVector2D> UV;
+	TArray<FProcMeshTangent> Tangents;
+
+
+	for (int32 i = 0; i < Sections; i++) {
+		UKismetProceduralMeshLibrary::GetSectionFromStaticMesh(StaticMeshComponent->GetStaticMesh(), 0, i, CurrentSectionVertices, CurrentSectionTriangles, Normals, UV, Tangents);
+		for (int32 Triangle : CurrentSectionTriangles) {
+			TotalSectionsTriangles.Add(Triangle + TotalSectionsVertices.Num());
+		}
+		TotalSectionsVertices.Append(CurrentSectionVertices);
 	}
+
+
+	Meshes.Emplace(TotalSectionsVertices, TotalSectionsTriangles);
+
 	return Meshes;
 }
 
@@ -337,8 +319,8 @@ float TMathUtilities::MeshVolume(UStaticMeshComponent* StaticMeshComponent)
 		for (int32 i = 0; i < TriangleCount; ++i)
 		{
 			const auto Vertex1 = TriangleMesh.Vertices[TriangleMesh.TriangleVertexIndices[i * 3 + 0]];
-			const auto Vertex2 = TriangleMesh.Vertices[TriangleMesh.TriangleVertexIndices[i * 3 + 1]];
-			const auto Vertex3 = TriangleMesh.Vertices[TriangleMesh.TriangleVertexIndices[i * 3 + 2]];
+			const auto Vertex2 = TriangleMesh.Vertices[TriangleMesh.TriangleVertexIndices[i * 3 + 2]];
+			const auto Vertex3 = TriangleMesh.Vertices[TriangleMesh.TriangleVertexIndices[i * 3 + 1]];
 
 			const auto LocalToWorld = StaticMeshComponent->GetComponentTransform();
 

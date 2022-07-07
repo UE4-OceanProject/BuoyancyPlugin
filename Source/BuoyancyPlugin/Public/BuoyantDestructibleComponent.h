@@ -5,12 +5,12 @@
 
 #include "CoreMinimal.h"
 #include "OceanPlugin/Public/OceanManager.h"
-#include "DestructibleComponent.h"
+#include "GeometryCollection/GeometryCollectionComponent.h"
 #include "BuoyantDestructibleComponent.generated.h"
 
 
 UCLASS(ClassGroup = Physics, hidecategories = (Object, Mesh, "Components|SkinnedMesh", Mirroring, Activation, "Components|Activation"), config = Engine, editinlinenew, meta = (BlueprintSpawnableComponent))
-class BUOYANCYPLUGIN_API UBuoyantDestructibleComponent : public UDestructibleComponent
+class BUOYANCYPLUGIN_API UBuoyantDestructibleComponent : public UGeometryCollectionComponent
 {
 	GENERATED_BODY()
 
@@ -25,6 +25,8 @@ private:
 	float _SignedRadius;
 	float _baseAngularDamping;
 	float _baseLinearDamping;
+	FFieldSystemCommand FieldCommand = FFieldObjectCommands::CreateFieldCommand(EFieldPhysicsType::Field_LinearForce,
+		new FUniformVector(0.0f, FVector(0, 0, 0)));
  
 public:
 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category = "Buoyant Settings")
@@ -68,18 +70,4 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Buoyant Settings")
 	float WaveForceMultiplier;
 
-	/*
-	* Sets the mass-normalized kinetic energy threshold below which an actor may go to sleep. 
-	* Default physx value is ~50.0f (we set it 0 to avoid weird sleeping chunks on water).
-	*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Advanced")
-	float ChunkSleepThreshold;
-
-	/*
-	* Sets the mass-normalized kinetic energy threshold below which an actor may participate in stabilization.
-	* (This value has no effect if PxSceneFlag::eENABLE_STABILIZATION was not enabled on the PxSceneDesc)
-	*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Advanced")
-	float ChunkStabilizationThreshold;
- 
 };

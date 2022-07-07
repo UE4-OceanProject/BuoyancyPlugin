@@ -6,6 +6,6 @@
 
 ABuoyantDestructible::ABuoyantDestructible(const class FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	BuoyantDestructibleComponent = CreateDefaultSubobject<UBuoyantDestructibleComponent>(TEXT("DestructibleComponent0"));
+	BuoyantDestructibleComponent = CreateDefaultSubobject<UBuoyantDestructibleComponent>(TEXT("DestructibleComponent"));
 	RootComponent = BuoyantDestructibleComponent;
 }

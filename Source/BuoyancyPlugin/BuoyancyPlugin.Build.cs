@@ -38,12 +38,14 @@ public class BuoyancyPlugin : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Landscape",
-				"PhysX",
-				"APEX",
-				"ApexDestruction",
+				"Chaos",
+				"GeometryCollectionEngine",
+				"ChaosSolverEngine",
 				"RHI",
 				"RenderCore",
 				"OceanPlugin",
+				"ProceduralMeshComponent",
+				"FieldSystemEngine",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

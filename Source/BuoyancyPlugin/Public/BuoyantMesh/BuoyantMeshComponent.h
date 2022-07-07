@@ -174,10 +174,6 @@ class TMeshUtilities
 {
    public:
 	static TArray<FTriangleMesh> GetTriangleMeshes(UStaticMeshComponent* StaticMeshComponent);
-
-   private:
-	static TArray<FVector> GetVertices(const PxTriangleMesh* TriangleMesh);
-	static TArray<int32> GetTriangleVertexIndices(const PxTriangleMesh* TriangleMesh);
 };
 
 class TMathUtilities

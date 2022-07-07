@@ -24,7 +24,7 @@
 			"Enabled": true
 		},
 		{
-			"Name": "ApexDestruction",
+			"Name": "ProceduralMeshComponent",
 			"Enabled": true
 		}
 	]

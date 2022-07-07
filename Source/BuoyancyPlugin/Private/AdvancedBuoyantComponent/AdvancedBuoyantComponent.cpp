@@ -194,8 +194,8 @@ void UAdvancedBuoyantComponent::DrawDebugStuff(FForceTriangle TriForce, FColor D
 
 void UAdvancedBuoyantComponent::PopulateTrianglesFromStaticMesh()
 {
-	int32 NumLODs = BuoyantMesh->GetStaticMesh()->RenderData->LODResources.Num();
-	FStaticMeshLODResources& LODResource = BuoyantMesh->GetStaticMesh()->RenderData->LODResources[NumLODs - 1];
+	int32 NumLODs = BuoyantMesh->GetStaticMesh()->GetRenderData()->LODResources.Num();
+	FStaticMeshLODResources& LODResource = BuoyantMesh->GetStaticMesh()->GetRenderData()->LODResources[NumLODs - 1];
 
 	int numIndices = LODResource.IndexBuffer.IndexBufferRHI->GetSize() / sizeof(uint16);
 	uint16* Indices = new uint16[numIndices];
@@ -212,14 +212,14 @@ void UAdvancedBuoyantComponent::PopulateTrianglesFromStaticMesh()
 		[IndexBuffer, Indices0, PositionVertexBuffer, Vertices0](FRHICommandListImmediate& RHICmdList)
 
 		{
-			uint16* indices1 = (uint16*)RHILockIndexBuffer(IndexBuffer->IndexBufferRHI, 0, IndexBuffer->IndexBufferRHI->GetSize(), RLM_ReadOnly);
-			float* indices2 = (float*)RHILockVertexBuffer(PositionVertexBuffer->VertexBufferRHI, 0, PositionVertexBuffer->VertexBufferRHI->GetSize(), RLM_ReadOnly);
+			uint16* indices1 = (uint16*)RHILockBuffer(IndexBuffer->IndexBufferRHI, 0, IndexBuffer->IndexBufferRHI->GetSize(), RLM_ReadOnly);
+			float* indices2 = (float*)RHILockBuffer(PositionVertexBuffer->VertexBufferRHI, 0, PositionVertexBuffer->VertexBufferRHI->GetSize(), RLM_ReadOnly);
 
 			memcpy(Indices0, indices1, IndexBuffer->IndexBufferRHI->GetSize());
 			memcpy(Vertices0, indices2, PositionVertexBuffer->VertexBufferRHI->GetSize());
 
-			RHIUnlockIndexBuffer(IndexBuffer->IndexBufferRHI);
-			RHIUnlockVertexBuffer(PositionVertexBuffer->VertexBufferRHI);
+			RHIUnlockBuffer(IndexBuffer->IndexBufferRHI);
+			RHIUnlockBuffer(PositionVertexBuffer->VertexBufferRHI);
 		}
 	);
 	
@@ -252,9 +252,9 @@ void UAdvancedBuoyantComponent::PopulateTrianglesFromStaticMesh()
 		int32 ib = Indices[TriIndex * 3 + 1];
 		int32 ic = Indices[TriIndex * 3 + 2];
 
-		FVector va = ((FPositionVertex*)(VertexBufferContent + ia*Stride))->Position;
-		FVector vb = ((FPositionVertex*)(VertexBufferContent + ib*Stride))->Position;
-		FVector vc = ((FPositionVertex*)(VertexBufferContent + ic*Stride))->Position;
+		FVector va = FVector(((FPositionVertex*)(VertexBufferContent + ia*Stride))->Position);
+		FVector vb = FVector(((FPositionVertex*)(VertexBufferContent + ib*Stride))->Position);
+		FVector vc = FVector(((FPositionVertex*)(VertexBufferContent + ic*Stride))->Position);
 
 		Tri.Add(va);
 		Tri.Add(vb);
