@@ -202,7 +202,7 @@ FIntVector2D UWaterHeightmapComponent::GetCellCoordinates(const FVector& WorldPo
 {
 	const auto GridRow = FMath::FloorToInt((WorldPosition.X - LowerLeftGridCorner.X) / CellSize.X);
 	const auto GridColumn = FMath::FloorToInt((WorldPosition.Y - LowerLeftGridCorner.Y) / CellSize.Y);
-	return FIntVector2D{GridRow, GridColumn};
+	return FIntVector2D{static_cast<int32>(GridRow), static_cast<int32>(GridColumn)};
 }
 
 bool UWaterHeightmapComponent::IsCellInBounds(const FIntVector2D CellCoords) const
