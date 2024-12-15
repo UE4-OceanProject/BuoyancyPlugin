@@ -57,9 +57,9 @@ void UBuoyantDestructibleComponent::TickComponent(float DeltaTime, enum ELevelTi
 
 	//Signed based on gravity, just in case we need an upside down world
 	_SignedRadius = FMath::Sign(Gravity) * TestPointRadius;
-#if WITH_CHAOS
+
 	if (GetPhysicsProxy()) {
-		TArray<Chaos::FPBDRigidClusteredParticleHandle*> Particles = GetPhysicsProxy()->GetParticles();
+		TArray<Chaos::FPBDRigidClusteredParticleHandle*> Particles = GetPhysicsProxy()->GetUnorderedParticles_Internal();
 		TArray<Chaos::FPBDRigidClusteredParticleHandle*> AppliedForceParticles;
 
 		for (Chaos::FPBDRigidClusteredParticleHandle* Particle : Particles) {
@@ -71,8 +71,8 @@ void UBuoyantDestructibleComponent::TickComponent(float DeltaTime, enum ELevelTi
 				if (AppliedForceParticles.Contains(Particle))
 					continue;
 
-				Chaos::FVec3 Trans = Particle->X();
-				Chaos::FRotation3 Rot = Particle->R();
+				Chaos::FVec3 Trans = Particle->GetX();
+				Chaos::FRotation3 Rot = Particle->GetR();
 				Chaos::FVec3 COM = Particle->CenterOfMass();
 				Trans += Rot.RotateVector(COM);
 
@@ -96,20 +96,24 @@ void UBuoyantDestructibleComponent::TickComponent(float DeltaTime, enum ELevelTi
 					float BuoyantForceZ = Particle->M() / ChunkDensity * FluidDensity * -Gravity * DepthMultiplier;
 
 					//Velocity damping
-					FVector DampingForce = -Particle->V() * VelocityDamper * Particle->M() * DepthMultiplier;
+					FVector DampingForce = -Particle->GetV() * VelocityDamper * Particle->M() * DepthMultiplier;
 
 					//Wave push force
 					if (EnableWaveForces)
 					{
-						float waveVelocity = FMath::Clamp(Particle->V().Z, -20.f, 150.f) * (1 - DepthMultiplier);
+						float waveVelocity = FMath::Clamp(Particle->GetV().Z, -20.f, 150.f) * (1 - DepthMultiplier);
 						DampingForce += FVector(OceanManager->GlobalWaveDirection.X, OceanManager->GlobalWaveDirection.Y, 0) * Particle->M() * waveVelocity * WaveForceMultiplier;
 					}
 
+
 					if (Particle->Sleeping()) {
-						Particle->SetObjectStateLowLevel(Chaos::EObjectStateType::Dynamic);
+						//Particle->SetObjectStateLowLevel(Chaos::EObjectStateType::Dynamic);
+						Particle->SetSleeping(false);
 					}
 
 					/*
+					*	***SEEMS TO BE FIXED BETWEEN 5.0 AND 5.4***
+					* 
 					 *	Add force for this particle
 					 *
 					 *	A weird bug happenes here if we call Particle->AddForce()
@@ -133,10 +137,13 @@ void UBuoyantDestructibleComponent::TickComponent(float DeltaTime, enum ELevelTi
 				   /*
 					*	ok so to use AddForce we need to call a field command that dispatches to physics thread to force update the velocity
 					*	if someone understands what's going on please let me know as i don't understand chaos anymore
+					* 
+					*	***SEEMS TO BE FIXED BETWEEN 5.0 AND 5.4***
+					* 
 					*/
 
 					Particle->AddForce(Chaos::FVec3(DampingForce.X, DampingForce.Y, DampingForce.Z + BuoyantForceZ));
-					DispatchFieldCommand(FieldCommand);
+
 
 					//To prevent adding force for the same parent particle multiple times
 					//when multiple children particles are refrencing the same parent particle
@@ -157,13 +164,12 @@ void UBuoyantDestructibleComponent::TickComponent(float DeltaTime, enum ELevelTi
 
 				//Clamp the chunk's velocity to MaxUnderwaterVelocity if chunk is underwater
 				if (ClampMaxVelocity && isUnderwater
-					&& Particle->V().Size() > MaxUnderwaterVelocity)
+					&& Particle->GetV().Size() > MaxUnderwaterVelocity)
 				{
-					FVector	Velocity = Particle->V().GetSafeNormal() * MaxUnderwaterVelocity;
+					FVector	Velocity = Particle->GetV().GetSafeNormal() * MaxUnderwaterVelocity;
 					Particle->SetV(Velocity);
 				}
 			}
 		}
 	}
-#endif // WITH_CHAOS 
 }

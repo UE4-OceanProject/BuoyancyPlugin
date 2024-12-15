@@ -200,9 +200,9 @@ FTrianglePlane UWaterHeightmapComponent::GetTrianglePlane(TArray<TOptional<FTria
 
 FIntVector2D UWaterHeightmapComponent::GetCellCoordinates(const FVector& WorldPosition) const
 {
-	const auto GridRow = FMath::FloorToInt((WorldPosition.X - LowerLeftGridCorner.X) / CellSize.X);
-	const auto GridColumn = FMath::FloorToInt((WorldPosition.Y - LowerLeftGridCorner.Y) / CellSize.Y);
-	return FIntVector2D{static_cast<int32>(GridRow), static_cast<int32>(GridColumn)};
+	const int32 GridRow = FMath::FloorToInt((WorldPosition.X - LowerLeftGridCorner.X) / CellSize.X);
+	const int32 GridColumn = FMath::FloorToInt((WorldPosition.Y - LowerLeftGridCorner.Y) / CellSize.Y);
+	return FIntVector2D{GridRow, GridColumn};
 }
 
 bool UWaterHeightmapComponent::IsCellInBounds(const FIntVector2D CellCoords) const

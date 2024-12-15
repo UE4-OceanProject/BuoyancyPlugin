@@ -58,7 +58,8 @@ public class BuoyancyPlugin : ModuleRules
 			}
 			);
 
-		// Make sure UBT reminds us of how to keep the project IWYU compliant
-		bEnforceIWYU = true;
-	}
+        // Make sure UBT reminds us of how to keep the project IWYU compliant
+        IWYUSupport = IWYUSupport.Full;
+        CppStandard = CppStandardVersion.Cpp20;
+    }
 }

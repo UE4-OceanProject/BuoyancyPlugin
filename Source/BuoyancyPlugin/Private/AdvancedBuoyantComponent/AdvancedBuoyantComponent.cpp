@@ -212,14 +212,15 @@ void UAdvancedBuoyantComponent::PopulateTrianglesFromStaticMesh()
 		[IndexBuffer, Indices0, PositionVertexBuffer, Vertices0](FRHICommandListImmediate& RHICmdList)
 
 		{
-			uint16* indices1 = (uint16*)RHILockBuffer(IndexBuffer->IndexBufferRHI, 0, IndexBuffer->IndexBufferRHI->GetSize(), RLM_ReadOnly);
-			float* indices2 = (float*)RHILockBuffer(PositionVertexBuffer->VertexBufferRHI, 0, PositionVertexBuffer->VertexBufferRHI->GetSize(), RLM_ReadOnly);
+			uint16* indices1 = (uint16*)RHICmdList.LockBuffer(IndexBuffer->IndexBufferRHI, 0, IndexBuffer->IndexBufferRHI->GetSize(), RLM_ReadOnly);
+			float* indices2 = (float*)RHICmdList.LockBuffer(PositionVertexBuffer->VertexBufferRHI, 0, PositionVertexBuffer->VertexBufferRHI->GetSize(), RLM_ReadOnly);
 
 			memcpy(Indices0, indices1, IndexBuffer->IndexBufferRHI->GetSize());
 			memcpy(Vertices0, indices2, PositionVertexBuffer->VertexBufferRHI->GetSize());
 
-			RHIUnlockBuffer(IndexBuffer->IndexBufferRHI);
-			RHIUnlockBuffer(PositionVertexBuffer->VertexBufferRHI);
+
+			RHICmdList.UnlockBuffer(IndexBuffer->IndexBufferRHI);
+			RHICmdList.UnlockBuffer(PositionVertexBuffer->VertexBufferRHI);
 		}
 	);
 	

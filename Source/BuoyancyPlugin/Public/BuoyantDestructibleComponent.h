@@ -25,8 +25,6 @@ private:
 	float _SignedRadius;
 	float _baseAngularDamping;
 	float _baseLinearDamping;
-	FFieldSystemCommand FieldCommand = FFieldObjectCommands::CreateFieldCommand(EFieldPhysicsType::Field_LinearForce,
-		new FUniformVector(0.0f, FVector(0, 0, 0)));
  
 public:
 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category = "Buoyant Settings")
