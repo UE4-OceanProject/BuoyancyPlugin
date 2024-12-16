@@ -245,7 +245,6 @@ void UAdvancedBuoyantComponent::PopulateTrianglesFromStaticMesh()
 	uint8* VertexBufferContent = (uint8*)Vertices;
 
 
-	FVector A; FVector B; FVector C;
 	for (int32 TriIndex = 0; TriIndex < NumTris; TriIndex++) {
 		TArray<FVector> Tri;
 		
